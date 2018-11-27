@@ -28,7 +28,7 @@ class NeuralNetwork:
             self.gradient_b.append(np.zeros((x,1)))
 
         for i in range(0,self.sz - 1):
-            self.w.append(np.random.rand(self.structure[i+1], self.structure[i])/50)
+            self.w.append(np.random.rand(self.structure[i+1], self.structure[i]) - 0.5)
             self.gradient_w.append(np.zeros((self.structure[i+1], self.structure[i])))
 
     def sigmoid(self, Z):
@@ -72,6 +72,8 @@ class NeuralNetwork:
 
             for j in range(0,len(X)):
                 self.feedforward(X[j])
+                y = np.reshape(Y[j],(Y[j].size,1))
+                err+=(np.transpose((self.a[self.sz-1] - y))@(self.a[self.sz-1] - y))
                 
                 self.backpropagation(Y[j])
 
@@ -80,6 +82,10 @@ class NeuralNetwork:
 
             for j in range(0,self.sz):
                 self.b[j]-=self.alpha*(self.gradient_b[j]/len(X))
+
+            err/= 2*len(X)
+
+            print(err)
 
     def predict(self, X):
         Y = []
@@ -91,30 +97,3 @@ class NeuralNetwork:
         Y = np.reshape(Y,(len(Y),1))
         return Y
             
-
-
-
-        
-
-nn = NeuralNetwork([64,15,10],0.01, 100)
-
-
-digits = load_digits()
-
-X = digits.images[:100]
-Y = digits.target[:100]
-Y_v = []
-for y in Y:
-    v = np.zeros((1,10))
-
-    v[0][y] = 1
-
-    Y_v.append(v)
-
-
-nn.train(X,Y_v)
-
-Y_T = nn.predict(digits.images[100:200])
-print(Y_T)
-print(accuracy_score(digits.target[100:200], Y_T))
-
